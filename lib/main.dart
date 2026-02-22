@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'login.dart';
+import 'student_home.dart';
+import 'admin_home.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -8,41 +11,41 @@ void main() async {
   runApp(const MyApp());
 }
 
-class MyApp extends StatefulWidget {
+class MyApp extends StatelessWidget {
   const MyApp({super.key});
-  @override
-  State<MyApp> createState() => _MyAppState();
-}
-
-class _MyAppState extends State<MyApp> {
-  bool isDark = true;
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      title: 'College Event App',
       debugShowCheckedModeBanner: false,
-      title: 'Futuristic Event Manager',
       theme: ThemeData(
-        brightness: isDark ? Brightness.dark : Brightness.light,
-        primaryColor: Colors.deepPurple,
-        scaffoldBackgroundColor: isDark ? Colors.black : Colors.grey[100],
-        textTheme: TextTheme(
-          headline6: TextStyle(
-              fontWeight: FontWeight.bold,
-              fontSize: 20,
-              color: isDark ? Colors.pinkAccent : Colors.deepPurple),
-          bodyText2: TextStyle(
-              fontSize: 16, color: isDark ? Colors.white : Colors.black),
-        ),
-        floatingActionButtonTheme: FloatingActionButtonThemeData(
-          backgroundColor: isDark ? Colors.pinkAccent : Colors.deepPurple,
-        ),
+        primarySwatch: Colors.blue,
       ),
-      home: LoginPage(
-        toggleTheme: () {
-          setState(() => isDark = !isDark);
-        },
-      ),
+      home: const RootPage(),
     );
+  }
+}
+
+// RootPage to check if user is already logged in
+class RootPage extends StatelessWidget {
+  const RootPage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final user = FirebaseAuth.instance.currentUser;
+
+    if (user == null) {
+      // Not logged in → go to login
+      return const LoginPage();
+    } else {
+      // Logged in → check role
+      // Example: if email is admin, go to AdminHome
+      if (user.email == 'admin@college.com') {
+        return const AdminHome();
+      } else {
+        return const StudentHome();
+      }
+    }
   }
 }
