@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "889050907767",
+    "project_id": "dbiteventapp",
+    "storage_bucket": "dbiteventapp.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:889050907767:android:b2cdbb2c79b00897c83272",
+        "android_client_info": {
+          "package_name": "com.example.college_event_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAqRLPSLij_5K0tvNuBLISL6FSnAUTmk0c"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:889050907767:android:1983b4e1c7d421f3c83272",
+        "android_client_info": {
+          "package_name": "com.example.dbiteventapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAqRLPSLij_5K0tvNuBLISL6FSnAUTmk0c"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
