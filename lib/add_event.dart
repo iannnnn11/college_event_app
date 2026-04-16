@@ -18,7 +18,14 @@ class _AddEventState extends State<AddEvent> {
   bool loading = false;
 
   final picker = ImagePicker();
+  String? selectedCategory;
 
+  final List<String> categories = [
+    "Hackathon",
+    "Coding Challenge",
+    "Talks and Other",
+    "Inter-College Events"
+  ];
   // Pick image from gallery
   Future<void> pickImage() async {
     final pickedFile =
@@ -30,14 +37,18 @@ class _AddEventState extends State<AddEvent> {
       });
     }
   }
+  
 
   // Add event to Firestore
   Future<void> addEvent() async {
-    if (titleController.text.isEmpty || descriptionController.text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Title and Description required")));
-      return;
-    }
+  if (titleController.text.isEmpty ||
+  descriptionController.text.isEmpty ||
+  selectedCategory == null) {
+ScaffoldMessenger.of(context).showSnackBar(
+  const SnackBar(content: Text("All fields are required")),
+);
+return;
+}
 
     setState(() {
       loading = true;
@@ -52,14 +63,14 @@ class _AddEventState extends State<AddEvent> {
       }
 
       await FirebaseFirestore.instance.collection("events").add({
-        "title": titleController.text,
-        "description": descriptionController.text,
-        "image": imageBase64,
-        "likes": 0,
-        "comments": [],
-        "joinedUsers": []
-      });
-
+      "title": titleController.text,
+      "description": descriptionController.text,
+      "image": imageBase64,
+      "category": selectedCategory, // ✅ NEW
+      "likes": 0,
+      "comments": [],
+      "joinedUsers": []
+    });
       ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text("Event added successfully")));
       Navigator.pop(context);
@@ -119,6 +130,32 @@ class _AddEventState extends State<AddEvent> {
                     borderSide: BorderSide.none),
               ),
             ),
+            const SizedBox(height: 15),
+
+            DropdownButtonFormField<String>(
+              value: selectedCategory,
+              items: categories.map((category) {
+                return DropdownMenuItem(
+                  value: category,
+                  child: Text(category),
+                );
+              }).toList(),
+              onChanged: (value) {
+                setState(() {
+                  selectedCategory = value;
+                });
+              },
+              decoration: InputDecoration(
+                labelText: "Select Category",
+                prefixIcon: const Icon(Icons.category),
+                filled: true,
+                fillColor: Colors.white,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide.none,
+                ),
+              ),
+            ),
             const SizedBox(height: 20),
             GestureDetector(
               onTap: pickImage,
@@ -148,17 +185,21 @@ class _AddEventState extends State<AddEvent> {
             loading
                 ? const CircularProgressIndicator()
                 : ElevatedButton(
-                    onPressed: addEvent,
-                    style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.blue,
-                        minimumSize: const Size(double.infinity, 50),
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12))),
-                    child: const Text(
-                      "Add Event",
-                      style: TextStyle(fontSize: 18, color: Colors.white),
-                    ),
-                  ),
+  onPressed: addEvent,
+  style: ElevatedButton.styleFrom(
+    elevation: 5,
+    backgroundColor: Colors.blueAccent,
+    shadowColor: Colors.blue.withOpacity(0.4),
+    minimumSize: const Size(double.infinity, 55),
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(15),
+    ),
+  ),
+  child: const Text(
+    "🚀 Add Event",
+    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+  ),
+),
           ],
         ),
       ),
