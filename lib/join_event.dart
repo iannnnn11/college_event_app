@@ -6,7 +6,13 @@ import 'package:image_picker/image_picker.dart';
 
 class JoinEventPage extends StatefulWidget {
   final String eventId;
-  const JoinEventPage({super.key, required this.eventId});
+  final bool isPaid; // ✅ NEW
+
+  const JoinEventPage({
+    super.key,
+    required this.eventId,
+    required this.isPaid,
+  });
 
   @override
   State<JoinEventPage> createState() => _JoinEventPageState();
@@ -26,11 +32,16 @@ class _JoinEventPageState extends State<JoinEventPage> {
   Future<void> pickPaymentImage() async {
     final picker = ImagePicker();
     final image = await picker.pickImage(source: ImageSource.gallery);
+
     if (image != null) {
       final bytes = await image.readAsBytes();
-      paymentBase64 = base64Encode(bytes);
+      setState(() {
+        paymentBase64 = base64Encode(bytes);
+      });
+
       ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Payment screenshot selected")));
+        const SnackBar(content: Text("Payment screenshot selected")),
+      );
     }
   }
 
@@ -42,7 +53,9 @@ class _JoinEventPageState extends State<JoinEventPage> {
         );
         return;
       }
-      if (paymentBase64 == null) {
+
+      // ✅ ONLY require screenshot if event is paid
+      if (widget.isPaid && paymentBase64 == null) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text("Upload payment screenshot")),
         );
@@ -60,12 +73,13 @@ class _JoinEventPageState extends State<JoinEventPage> {
         "name": _nameController.text,
         "department": selectedDepartment,
         "year": selectedYear,
-        "paymentScreenshot": paymentBase64,
+        "paymentScreenshot": widget.isPaid ? paymentBase64 : null, // ✅ FIX
         "joinedAt": FieldValue.serverTimestamp(),
       });
 
       ScaffoldMessenger.of(context)
           .showSnackBar(const SnackBar(content: Text("Joined successfully")));
+
       if (!mounted) return;
       Navigator.pop(context);
     }
@@ -74,8 +88,10 @@ class _JoinEventPageState extends State<JoinEventPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar:
-          AppBar(title: const Text("Join Event"), backgroundColor: Colors.blue),
+      appBar: AppBar(
+        title: const Text("Join Event"),
+        backgroundColor: Colors.blue,
+      ),
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: Form(
@@ -89,9 +105,10 @@ class _JoinEventPageState extends State<JoinEventPage> {
                     labelText: "Name", border: OutlineInputBorder()),
                 validator: (val) => val!.isEmpty ? "Enter your name" : null,
               ),
+
               const SizedBox(height: 15),
 
-              // Department Dropdown
+              // Department
               DropdownButtonFormField<String>(
                 value: selectedDepartment,
                 decoration: const InputDecoration(
@@ -103,12 +120,11 @@ class _JoinEventPageState extends State<JoinEventPage> {
                         DropdownMenuItem(value: dept, child: Text(dept)))
                     .toList(),
                 onChanged: (val) => setState(() => selectedDepartment = val),
-                validator: (val) =>
-                    val == null ? "Please select your department" : null,
               ),
+
               const SizedBox(height: 15),
 
-              // Year Dropdown
+              // Year
               DropdownButtonFormField<String>(
                 value: selectedYear,
                 decoration: const InputDecoration(
@@ -119,18 +135,31 @@ class _JoinEventPageState extends State<JoinEventPage> {
                     .map((y) => DropdownMenuItem(value: y, child: Text(y)))
                     .toList(),
                 onChanged: (val) => setState(() => selectedYear = val),
-                validator: (val) =>
-                    val == null ? "Please select your year" : null,
               ),
-              const SizedBox(height: 15),
 
-              // Payment Upload
-              ElevatedButton.icon(
-                onPressed: pickPaymentImage,
-                icon: const Icon(Icons.upload_file),
-                label: const Text("Upload Payment Screenshot"),
-              ),
               const SizedBox(height: 20),
+
+              // ✅ SHOW ONLY IF PAID
+              if (widget.isPaid) ...[
+                const Text(
+                  "Upload Payment Screenshot",
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 10),
+                ElevatedButton.icon(
+                  onPressed: pickPaymentImage,
+                  icon: const Icon(Icons.upload_file),
+                  label: const Text("Upload Screenshot"),
+                ),
+                const SizedBox(height: 20),
+              ] else ...[
+                const Text(
+                  "This is a FREE event 🎉",
+                  style: TextStyle(
+                      color: Colors.green, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 20),
+              ],
 
               ElevatedButton(
                 onPressed: submit,
